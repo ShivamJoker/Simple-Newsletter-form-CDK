@@ -14,6 +14,14 @@ Newsletter backend in CDK using AWS Lambda, DynamoDB & API Gateway
 
 ### Submit a request
 
+#### Using HTTP pie
+
+```sh
+https post https://your-endpoint/subscribe name="shivam" email="hi@baby.com"
+```
+
+#### Using curl
+
 ```sh
 curl https://your-endpoint/subscribe \
 --header "Content-Type: application/json" \
