@@ -1,14 +1,28 @@
-# Welcome to your CDK TypeScript project
+# Simple Newsletter form in CDK
 
-This is a blank project for CDK development with TypeScript.
+Newsletter backend in CDK using AWS Lambda, DynamoDB & API Gateway
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## How to deploy
 
-## Useful commands
+- Configure and install AWS CLI & CDK
+- `pnpm install` Install the packages
+- `./bundle-lambda.sh` Bundle lambda into JS
+- `cdk bootstrap` Bootstrap your app (only once)
+- `cdk deploy` Deploy this stack to your default AWS account/region
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+## How to test
+
+### Submit a request
+
+```sh
+curl https://your-endpoint/subscribe \
+--header "Content-Type: application/json" \
+--request POST \
+--data '{"name": "shivam","email": "hi@bye.com"}'
+```
+
+### Scan the table
+
+```sh
+aws dynamodb scan --table-name learnaws-newsletter --region ap-southeast-1
+```
