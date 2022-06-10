@@ -1,7 +1,17 @@
-import { Stack, StackProps, CfnOutput, RemovalPolicy } from "aws-cdk-lib";
+import {
+  Stack,
+  StackProps,
+  CfnOutput,
+  RemovalPolicy,
+  Duration,
+} from "aws-cdk-lib";
 import { Table, AttributeType, BillingMode } from "aws-cdk-lib/aws-dynamodb";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
-import { HttpApi, HttpMethod } from "@aws-cdk/aws-apigatewayv2-alpha";
+import {
+  HttpApi,
+  HttpMethod,
+  CorsHttpMethod,
+} from "@aws-cdk/aws-apigatewayv2-alpha";
 import { Construct } from "constructs";
 import { Function, Code, Runtime } from "aws-cdk-lib/aws-lambda";
 import { join } from "path";
@@ -36,7 +46,14 @@ export class BackendStack extends Stack {
       subscribeFn
     );
 
-    const httpApi = new HttpApi(this, "subscribe-endpoint");
+    const httpApi = new HttpApi(this, "subscribe-endpoint", {
+      corsPreflight: {
+        allowHeaders: ["*"],
+        allowMethods: [CorsHttpMethod.POST],
+        allowOrigins: ["http://localhost:3000", "https://learnaws.io"],
+        maxAge: Duration.days(10),
+      },
+    });
 
     if (!httpApi.url) {
       throw Error("Failed to get http api url");
