@@ -1,10 +1,14 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { PutItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { validate } from "isemail";
-
+import { isEmailValid } from "@sideway/address";
+import { isEmailDomainValid } from "node-email-domain-check";
 const { TABLE_NAME } = process.env;
 
 const dbClient = new DynamoDBClient({ region: "ap-southeast-1" });
+
+const makeMsg = (msg: string) => {
+  return JSON.stringify({ message: msg });
+};
 
 interface FormData {
   name: string;
@@ -12,12 +16,12 @@ interface FormData {
 }
 const invalid_body_res = {
   statusCode: 406,
-  body: '{"message":"invalid form data}"',
+  body: makeMsg("invalid form data"),
 };
 
 const invalid_email_res = {
   statusCode: 406,
-  body: '{"message": "invalid email"}',
+  body: makeMsg("invalid email"),
 };
 
 export const main = async (
@@ -34,7 +38,14 @@ export const main = async (
     return invalid_body_res;
   }
 
-  if (!validate(email)) {
+  if (!isEmailValid(email)) {
+    return invalid_email_res;
+  }
+
+  try {
+    // check for spam or invalid emails
+    await isEmailDomainValid(email);
+  } catch (error) {
     return invalid_email_res;
   }
 
@@ -49,8 +60,11 @@ export const main = async (
 
   try {
     await dbClient.send(putItemCmd);
-    return { body: "Subscribed successfully!" };
+    return { body: makeMsg("Subscribed successfully!"), statusCode: 200 };
   } catch (error) {
-    return { statusCode: 400, body: JSON.stringify(error) };
+    return {
+      statusCode: 409,
+      body: makeMsg("Email already exists in the DB"),
+    };
   }
 };
